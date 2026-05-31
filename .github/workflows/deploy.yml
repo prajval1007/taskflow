@@ -67,16 +67,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy backend to ECS
+      - name: Deploy to ECS
         run: |
           aws ecs update-service \
             --cluster taskflow-cluster \
-            --service taskflow-backend-service \
-            --force-new-deployment
-
-      - name: Deploy frontend to ECS
-        run: |
-          aws ecs update-service \
-            --cluster taskflow-cluster \
-            --service taskflow-frontend-service \
+            --service taskflow-service \
             --force-new-deployment
