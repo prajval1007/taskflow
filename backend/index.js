@@ -14,15 +14,33 @@ const pool = new Pool({
   password: process.env.DB_PASS || 'postgres',
 });
 
-// Create table on startup
-pool.query(`
-  CREATE TABLE IF NOT EXISTS tasks (
-    id SERIAL PRIMARY KEY,
-    title TEXT NOT NULL,
-    completed BOOLEAN DEFAULT false,
-    created_at TIMESTAMP DEFAULT NOW()
-  )
-`);
+// Retry connecting to DB
+const connectWithRetry = async () => {
+  const maxRetries = 10;
+  const delay = 3000; // 3 seconds
+
+  for (let i = 1; i <= maxRetries; i++) {
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS tasks (
+          id SERIAL PRIMARY KEY,
+          title TEXT NOT NULL,
+          completed BOOLEAN DEFAULT false,
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+      console.log('Connected to database successfully!');
+      return;
+    } catch (err) {
+      console.log(`DB connection attempt ${i} failed. Retrying in 3s...`);
+      await new Promise(res => setTimeout(res, delay));
+    }
+  }
+  console.error('Could not connect to DB after max retries. Exiting.');
+  process.exit(1);
+};
+
+connectWithRetry();
 
 // GET all tasks
 app.get('/tasks', async (req, res) => {
