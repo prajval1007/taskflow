@@ -71,5 +71,5 @@ jobs:
         run: |
           aws ecs update-service \
             --cluster taskflow-cluster \
-            --service taskflow-service \
+            --service taskflow-td-service \
             --force-new-deployment
